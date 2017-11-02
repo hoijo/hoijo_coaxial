@@ -239,7 +239,7 @@ public:
     // Optional Disturbance Observer Based Controller
     void set_use_DOB(bool use_DOB);
     bool get_use_DOB() {return _use_DOB;}
-    void DOB_on_change(float& state_filtered, uint16_t flag_RPY);
+    // float DOB_on_change(float state_filtered, uint16_t flag_RPY);
     float disturbance_observer_on_roll(float control_output, bool use_DOB);
     float disturbance_observer_on_pitch(float control_output, bool use_DOB);
     float disturbance_observer_on_yaw(float control_output, bool use_DOB);
@@ -386,20 +386,22 @@ protected:
     // Internal variable defined for DOBC
     // Variables which should be initilialized only once
     bool _use_DOB = true;
-    bool flag_last = false;
+    bool flag_last_R = false;
+    bool flag_last_P = false;
+    bool flag_last_Y = false;
 
     float control_filtered_roll = 0.0f; // state p1
-    float state_filtered_roll = 0.0f; // state q1
+    float state_filtered_roll = _ahrs.roll; // state q1
     float p2_roll = 0.0f;
     float q2_roll = 0.0f;
 
     float control_filtered_pitch = 0.0f; // state p1
-    float state_filtered_pitch = 0.0f; // state q1
+    float state_filtered_pitch = _ahrs.pitch; // state q1
     float p2_pitch = 0.0f;
     float q2_pitch = 0.0f;
 
     float control_filtered_yaw = 0.0f; // state p1
-    float state_filtered_yaw = 0.0f; // state q1
+    float state_filtered_yaw = _ahrs.yaw; // state q1
     float p2_yaw = 0.0f;
     float q2_yaw = 0.0f;
 
@@ -422,6 +424,12 @@ protected:
       float roll_control;
       float pitch_control;
       float yaw_control;
+      float roll_control_filtered;
+      float pitch_control_filtered;
+      float yaw_control_filtered;
+      uint8_t flagR;
+      uint8_t flagP;
+      uint8_t flagY;
     } _dob_monitor;
 
     // update state in ControlMonitor
