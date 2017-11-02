@@ -614,6 +614,8 @@ private:
     // last esc calibration notification update
     uint32_t esc_calibration_notify_update_ms;
 
+    bool flag_DOB_last = false;
+
 #if VISUAL_ODOMETRY_ENABLED == ENABLED
     // last visual odometry update time
     uint32_t visual_odom_last_update_ms;
@@ -1194,6 +1196,7 @@ public:
     int8_t test_rangefinder(uint8_t argc, const Menu::arg *argv);
 
     int8_t reboot_board(uint8_t argc, const Menu::arg *argv);
+    void radio_set_use_DOB();
 };
 
 #define MENU_FUNC(func) FUNCTOR_BIND(&copter, &Copter::func, int8_t, uint8_t, const Menu::arg *)

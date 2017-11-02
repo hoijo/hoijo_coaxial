@@ -140,8 +140,7 @@ AC_WPNav::AC_WPNav(const AP_InertialNav& inav, const AP_AHRS_View& ahrs, AC_PosC
     _flags.slowing_down = false;
     _flags.recalc_wp_leash = false;
     _flags.new_wp_destination = false;
-    _flags.segment_type = SEGMENT_STRAIGHT;
-
+    // _flags.segment_type = SEGMENT_STRAIGHT;
     // sanity check some parameters
     _loiter_speed_cms = MAX(_loiter_speed_cms, WPNAV_LOITER_SPEED_MIN);
     _wp_radius_cm = MAX(_wp_radius_cm, WPNAV_WP_RADIUS_MIN);
@@ -491,6 +490,7 @@ bool AC_WPNav::set_wp_origin_and_destination(const Vector3f& origin, const Vecto
         _pos_delta_unit.y = 0;
         _pos_delta_unit.z = 0;
     }else{
+      // Direction Vector for the 3D Position Error
         _pos_delta_unit = pos_delta/_track_length;
     }
 
@@ -625,7 +625,7 @@ bool AC_WPNav::advance_wp_target_along_track(float dt)
     // calculate point at which velocity switches from linear to sqrt
     float linear_velocity = _wp_speed_cms;
     float kP = _pos_control.get_pos_xy_kP();
-    if (kP >= 0.0f) {   // avoid divide by zero
+    if (kP > 0.0f) {   // avoid divide by zero
         linear_velocity = _track_accel/kP;
     }
 
@@ -642,16 +642,16 @@ bool AC_WPNav::advance_wp_target_along_track(float dt)
         _limited_speed_xy_cms = constrain_float(_limited_speed_xy_cms, 0.0f, _track_speed);
 
         // check if we should begin slowing down
-        if (!_flags.fast_waypoint) {
-            float dist_to_dest = _track_length - _track_desired;
-            if (!_flags.slowing_down && dist_to_dest <= _slow_down_dist) {
-                _flags.slowing_down = true;
-            }
-            // if target is slowing down, limit the speed
-            if (_flags.slowing_down) {
-                _limited_speed_xy_cms = MIN(_limited_speed_xy_cms, get_slow_down_speed(dist_to_dest, _track_accel));
-            }
-        }
+        // if (!_flags.fast_waypoint) {
+        //     float dist_to_dest = _track_length - _track_desired;
+        //     if (!_flags.slowing_down && dist_to_dest <= _slow_down_dist) {
+        //         _flags.slowing_down = true;
+        //     }
+        //     // if target is slowing down, limit the speed
+        //     if (_flags.slowing_down) {
+        //         _limited_speed_xy_cms = MIN(_limited_speed_xy_cms, get_slow_down_speed(dist_to_dest, _track_accel));
+        //     }
+        // }
 
         // if our current velocity is within the linear velocity range limit the intermediate point's velocity to be no more than the linear_velocity above or below our current velocity
         if (fabsf(speed_along_track) < linear_velocity) {

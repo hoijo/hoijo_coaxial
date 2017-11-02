@@ -124,22 +124,6 @@ void AC_AttitudeControl::relax_attitude_controllers()
     get_rate_yaw_pid().reset_I();
 }
 
-void AC_AttitudeControl::reset_attitude_controllers()
-{
-    // TODO add _ahrs.get_quaternion()
-    _attitude_target_quat.from_rotation_matrix(_ahrs.get_rotation_body_to_ned());
-    _attitude_target_ang_vel = Vector3f(0.0f, 0.0f, 0.0f);
-    _attitude_target_euler_angle = Vector3f(0.0f, 0.0f, _ahrs.yaw);
-
-    // Set reference angular velocity used in angular velocity controller equal
-    // to the input angular velocity and reset the angular velocity integrators.
-    // This zeros the output of the angular velocity controller.
-    _rate_target_ang_vel = Vector3f(0.0f, 0.0f, 0.0f);
-    get_rate_roll_pid().reset_I();
-    get_rate_pitch_pid().reset_I();
-    get_rate_yaw_pid().reset_I();
-}
-
 void AC_AttitudeControl::reset_rate_controller_I_terms()
 {
     get_rate_roll_pid().reset_I();
@@ -624,6 +608,9 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     // Compute output in range -1 ~ +1
     float output = get_rate_roll_pid().get_p() + integrator + get_rate_roll_pid().get_d() + get_rate_roll_pid().get_ff(rate_target_rads);
 
+    float control_DOB = disturbance_observer_on_roll(output, _use_DOB);
+
+    output -= control_DOB;
     // Constrain output
     return constrain_float(output, -1.0f, 1.0f);
 }
@@ -647,6 +634,9 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     // Compute output in range -1 ~ +1
     float output = get_rate_pitch_pid().get_p() + integrator + get_rate_pitch_pid().get_d() + get_rate_pitch_pid().get_ff(rate_target_rads);
 
+    float control_DOB = disturbance_observer_on_pitch(output, _use_DOB);
+
+    output -= control_DOB;
     // Constrain output
     return constrain_float(output, -1.0f, 1.0f);
 }
@@ -670,6 +660,8 @@ float AC_AttitudeControl::rate_target_to_motor_yaw(float rate_actual_rads, float
     // Compute output in range -1 ~ +1
     float output = get_rate_yaw_pid().get_p() + integrator + get_rate_yaw_pid().get_d() + get_rate_yaw_pid().get_ff(rate_target_rads);
 
+    float control_DOB = disturbance_observer_on_yaw(output, _use_DOB);
+    output -= control_DOB;
     // Constrain output
     return constrain_float(output, -1.0f, 1.0f);
 }
@@ -770,4 +762,185 @@ float AC_AttitudeControl::max_rate_step_bf_yaw()
     float alpha = get_rate_yaw_pid().get_filt_alpha();
     float alpha_remaining = 1-alpha;
     return 2.0f*_motors.get_throttle_hover()*AC_ATTITUDE_RATE_RP_CONTROLLER_OUT_MAX/((alpha_remaining*alpha_remaining*alpha_remaining*alpha*get_rate_yaw_pid().kD())/_dt + get_rate_yaw_pid().kP());
+}
+
+// Set Function for the Disturbance Observer Based Controller
+void AC_AttitudeControl::set_use_DOB(bool use_DOB)
+{
+    _use_DOB = use_DOB;
+}
+
+void AC_AttitudeControl::DOB_on_change(float& state_filtered, uint16_t flag_RPY)
+{
+  if (_use_DOB)
+  {
+    if (flag_last != _use_DOB)
+    {
+      flag_last = _use_DOB;
+
+      if (flag_RPY == 1)
+      {
+        state_filtered = _ahrs.roll;
+      }
+
+      if (flag_RPY == 2)
+      {
+        state_filtered = _ahrs.pitch;
+      }
+
+      if (flag_RPY == 3)
+      {
+        state_filtered = _ahrs.yaw;
+      }
+    }
+  }
+}
+// Addition of Disturbance Observer Based Controller for Attitude Control Loops
+float AC_AttitudeControl::disturbance_observer_on_roll(float control_output, bool use_DOB)
+{
+
+    // System Setup
+    // Nominal System is basic 2nd order system
+    float a0 = 1.0f;
+    float a1 = 2.0f;
+    float b0 = 0.01811f;
+
+    // Q-Filter Coefficient
+    float tau = 0.5f;;
+    float temp = a0/(tau * tau);
+    // float state = radians(_ahrs.roll*0.01f); // current state
+    float state = _ahrs.roll;
+    // A : Control Input Filtering (Q-Filter A)
+    DOB_on_change(state_filtered_roll, 1);
+    float p2_dot = -temp * control_filtered_roll - a1/tau * p2_roll + temp * control_output;
+    p2_roll += p2_dot * _dt;
+    control_filtered_roll += p2_roll * _dt;
+
+    // Time-Domain Serialized Implementation
+    // B : Q_Filter B to State Filtering
+    // float roll = _ahrs.roll;
+    float q2_dot = -temp * state_filtered_roll - a1/tau * q2_roll + temp * state;
+    q2_roll += q2_dot * _dt;
+
+    state_filtered_roll += q2_roll * _dt;
+    state_filtered_roll = wrap_PI(state_filtered_roll);
+    // float control_DOB = 1/b0 * (q2_dot - a0 * state_filtered_roll - a1 * q2_roll);
+    float control_DOB = 1 * (q2_dot);
+
+    //Inverse Dyanmics
+    // B-A = FeedForward Control to the disturbance
+    control_DOB -= control_filtered_roll;
+    // this should be subtracted to original roll_control
+    if (use_DOB)
+    {
+      return control_DOB;
+    }
+
+    else
+    {
+      // p2_roll = 0.0f;
+      // q2_roll = 0.0f;
+      // state_filtered_roll = 0.0f;
+      // control_filtered_roll = 0.0f;
+      return 0.0f; //direct feed-through
+    }
+}
+
+float AC_AttitudeControl::disturbance_observer_on_pitch(float control_output, bool use_DOB)
+{
+
+    // System Setup
+    // Nominal System is basic 2nd order system
+    float a0 = 1.0f;
+    float a1 = 2.0f;
+    float b0 = 0.03872f;
+    // float b0 = 1;
+
+    // Q-Filter Coefficient
+    float tau = 0.5f;
+    float temp = a0/(tau * tau);
+    // float state = radians(_ahrs.pitch*0.01f); // current pitch state
+    // To-Do : What's the unit of roll, pitch, yaw?
+    float state = _ahrs.pitch;
+    // A : Control Input Filtering (Q-Filter A)
+    float p2_dot = -temp * control_filtered_pitch - a1/tau * p2_pitch + temp * control_output;
+    p2_pitch += p2_dot * _dt;
+    control_filtered_pitch += p2_pitch * _dt;
+
+    // Time-Domain Serialized Implementation
+    // B : Q_Filter B for State Filtering
+    DOB_on_change(state_filtered_pitch, 2);
+
+    float q2_dot = -temp * state_filtered_pitch - a1/tau * q2_pitch + temp * state;
+    q2_pitch += q2_dot * _dt;
+
+    state_filtered_pitch += q2_pitch * _dt;
+    state_filtered_pitch = wrap_PI(state_filtered_pitch);
+    // float control_DOB = 1/b0 * (q2_dot - a0 * state_filtered_pitch - a1 * q2_pitch);
+    float control_DOB = 1 * (q2_dot);
+    //Inverse Dyanmics
+    // B-A = FeedForward Control to the disturbance
+    control_DOB -= control_filtered_pitch;
+    // this should be subtracted to original roll_control
+    if (use_DOB)
+    {
+      return control_DOB;
+    }
+    else
+    {
+      // p2_pitch = 0.0f;
+      // q2_pitch = 0.0f;
+      // state_filtered_pitch = 0.0f;
+      // control_filtered_pitch = 0.0f;
+      return 0.0f; //direct feed-through
+    }
+}
+
+float AC_AttitudeControl::disturbance_observer_on_yaw(float control_output, bool use_DOB)
+{
+
+    // System Setup
+    // Nominal System is basic 2nd order system
+    float a0 = 1.0f;
+    float a1 = 2.0f;
+    float b0 = 0.02438f;
+    // float b0 = 1;
+    // Q-Filter Coefficient
+    float tau = 0.5f;
+    float temp = a0/(tau * tau);
+    // float state = radians(_ahrs.yaw*0.01f); // current heading
+    float state = _ahrs.yaw;
+    // A : Control Input Filtering (Q-Filter A)
+    float p2_dot = -temp * control_filtered_yaw - a1/tau * p2_yaw + temp * control_output;
+    p2_yaw += p2_dot * _dt;
+    control_filtered_yaw += p2_yaw * _dt;
+
+    // Time-Domain Serialized Implementation
+    // B : Q_Filter B to State Filtering
+    // float roll = _ahrs.roll;
+    DOB_on_change(state_filtered_yaw, 3);
+
+    float q2_dot = -temp * state_filtered_yaw - a1/tau * q2_yaw + temp * state;
+    q2_yaw += q2_dot * _dt;
+
+    state_filtered_yaw += q2_yaw * _dt;
+    state_filtered_yaw = wrap_PI(state_filtered_yaw);
+    // float control_DOB = 1/b0 * (q2_dot - a0 * state_filtered_yaw - a1 * q2_yaw);
+    float control_DOB = 1 * (q2_dot);
+    //Inverse Dyanmics
+    // B-A = FeedForward Control to the disturbance
+    control_DOB -= control_filtered_yaw;
+    // this should be subtracted to original roll_control
+    if (use_DOB)
+    {
+      return control_DOB;
+    }
+    else
+    {
+      // p2_yaw = 0.0f;
+      // q2_yaw = 0.0f;
+      // state_filtered_yaw = 0.0f;
+      // control_filtered_yaw = 0.0f;
+      return 0.0f; //direct feed-through
+    }
 }

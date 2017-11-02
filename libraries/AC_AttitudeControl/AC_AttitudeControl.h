@@ -104,7 +104,6 @@ public:
     // Ensure attitude controller have zero errors to relax rate controller output
     void relax_attitude_controllers();
 
-    void reset_attitude_controllers();
     // reset rate controller I terms
     void reset_rate_controller_I_terms();
 
@@ -236,6 +235,14 @@ public:
 
     // Calculates the body frame angular velocities to follow the target attitude
     void attitude_controller_run_quat();
+
+    // Optional Disturbance Observer Based Controller
+    void set_use_DOB(bool use_DOB);
+    bool get_use_DOB() {return _use_DOB;}
+    void DOB_on_change(float& state_filtered, uint16_t flag_RPY);
+    float disturbance_observer_on_roll(float control_output, bool use_DOB);
+    float disturbance_observer_on_pitch(float control_output, bool use_DOB);
+    float disturbance_observer_on_yaw(float control_output, bool use_DOB);
 
     // sanity check parameters.  should be called once before take-off
     virtual void parameter_sanity_check() {}
@@ -375,6 +382,26 @@ protected:
     const AP_AHRS_View&  _ahrs;
     const AP_Vehicle::MultiCopter &_aparm;
     AP_Motors&          _motors;
+
+    // Internal variable defined for DOBC
+    // Variables which should be initilialized only once
+    bool _use_DOB = true;
+    bool flag_last = false;
+
+    float control_filtered_roll = 0.0f; // state p1
+    float state_filtered_roll = 0.0f; // state q1
+    float p2_roll = 0.0f;
+    float q2_roll = 0.0f;
+
+    float control_filtered_pitch = 0.0f; // state p1
+    float state_filtered_pitch = 0.0f; // state q1
+    float p2_pitch = 0.0f;
+    float q2_pitch = 0.0f;
+
+    float control_filtered_yaw = 0.0f; // state p1
+    float state_filtered_yaw = 0.0f; // state q1
+    float p2_yaw = 0.0f;
+    float q2_yaw = 0.0f;
 
 protected:
     /*

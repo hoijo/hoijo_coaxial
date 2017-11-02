@@ -544,14 +544,14 @@ const AP_Param::Info Sub::var_info[] = {
     // @User: Standard
     GGROUP(p_pos_xy,                "POS_XY_", AC_P),
 
-#if COMPOUND_SYSTEM_ENABLED
-      // @Param: THRUSTER_P
-      // @DisplayName: Compound Forward Thruster accleration controller P gain
-      // @Description: Forward Compounded System Acceleration to Throttle controller P gain.
-      // @Range: 0.500 2.000
-      // @User: Standard
-      GGROUP(throttle_p,              "THRUSTER_", AC_P),
-#endif
+// #if COMPOUND_SYSTEM_ENABLED
+//       // @Param: THRUSTER_P
+//       // @DisplayName: Compound Forward Thruster accleration controller P gain
+//       // @Description: Forward Compounded System Acceleration to Throttle controller P gain.
+//       // @Range: 0.500 2.000
+//       // @User: Standard
+//       GGROUP(throttle_p,              "THRUSTER_", AC_P),
+// #endif
 
     // variables not in the g class which contain EEPROM saved variables
 

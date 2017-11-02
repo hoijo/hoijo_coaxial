@@ -163,6 +163,11 @@ void Copter::auto_takeoff_run()
         // reset attitude control targets
         attitude_control->set_throttle_out_unstabilized(0,true,g.throttle_filt);
 #endif
+
+#if COMPOUND_SYSTEM_ENABLED
+pos_control->set_use_thruster(false);
+#endif
+
         // clear i term when we're taking off
         set_throttle_takeoff();
         return;
@@ -250,6 +255,10 @@ void Copter::auto_wp_run()
         motors->set_desired_spool_state(AP_Motors::DESIRED_SPIN_WHEN_ARMED);
         attitude_control->set_throttle_out_unstabilized(0,true,g.throttle_filt);
 #endif
+
+#if COMPOUND_SYSTEM_ENABLED
+pos_control->set_use_thruster(true);
+#endif
         // clear i term when we're taking off
         set_throttle_takeoff();
         return;
@@ -330,6 +339,10 @@ void Copter::auto_spline_run()
         attitude_control->set_throttle_out_unstabilized(0,true,g.throttle_filt);
         motors->set_desired_spool_state(AP_Motors::DESIRED_SPIN_WHEN_ARMED);
 #endif
+
+#if COMPOUND_SYSTEM_ENABLED
+pos_control->set_use_thruster(true);
+#endif
         // clear i term when we're taking off
         set_throttle_takeoff();
         return;
@@ -408,6 +421,10 @@ void Copter::auto_land_run()
         // multicopters do not stabilize roll/pitch/yaw when disarmed
         attitude_control->set_throttle_out_unstabilized(0,true,g.throttle_filt);
 #endif
+
+#if COMPOUND_SYSTEM_ENABLED
+    pos_control->set_use_thruster(false);
+#endif
         // set target to current position
         wp_nav->init_loiter_target();
         return;
@@ -433,6 +450,9 @@ void Copter::auto_rtl_start()
 //      called by auto_run at 100hz or more
 void Copter::auto_rtl_run()
 {
+  #if COMPOUND_SYSTEM_ENABLED
+  pos_control->set_use_thruster(true);
+  #endif
     // call regular rtl flight mode run function
     rtl_run();
 }
@@ -505,6 +525,10 @@ void Copter::auto_circle_start()
 //      called by auto_run at 100hz or more
 void Copter::auto_circle_run()
 {
+  #if COMPOUND_SYSTEM_ENABLED
+  pos_control->set_use_thruster(false);
+  #endif
+
     // call circle controller
     circle_nav->update();
 
