@@ -415,6 +415,15 @@ protected:
         float rms_yaw;
     } _control_monitor;
 
+    struct {
+      float roll_filtered;
+      float pitch_filtered;
+      float yaw_filtered;
+      float roll_control;
+      float pitch_control;
+      float yaw_control;
+    } _dob_monitor;
+
     // update state in ControlMonitor
     void control_monitor_filter_pid(float value, float &rms_P);
     void control_monitor_update(void);
@@ -422,7 +431,7 @@ protected:
 public:
     // log a CTRL message
     void control_monitor_log(void);
-
+    void dobc_monitor_log(void);
     // return current RMS controller filter for each axis
     float control_monitor_rms_output_roll(void) const;
     float control_monitor_rms_output_roll_P(void) const;

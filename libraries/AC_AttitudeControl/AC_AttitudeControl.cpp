@@ -792,6 +792,7 @@ void AC_AttitudeControl::DOB_on_change(float& state_filtered, uint16_t flag_RPY)
       {
         state_filtered = _ahrs.yaw;
       }
+
     }
   }
 }
@@ -830,6 +831,9 @@ float AC_AttitudeControl::disturbance_observer_on_roll(float control_output, boo
     //Inverse Dyanmics
     // B-A = FeedForward Control to the disturbance
     control_DOB -= control_filtered_roll;
+
+    _dob_monitor.roll_filtered = state_filtered_roll;
+    _dob_monitor.roll_control = control_DOB;
     // this should be subtracted to original roll_control
     if (use_DOB)
     {
@@ -882,6 +886,9 @@ float AC_AttitudeControl::disturbance_observer_on_pitch(float control_output, bo
     // B-A = FeedForward Control to the disturbance
     control_DOB -= control_filtered_pitch;
     // this should be subtracted to original roll_control
+
+    _dob_monitor.pitch_filtered = state_filtered_pitch;
+    _dob_monitor.pitch_control = control_DOB;
     if (use_DOB)
     {
       return control_DOB;
@@ -930,6 +937,9 @@ float AC_AttitudeControl::disturbance_observer_on_yaw(float control_output, bool
     //Inverse Dyanmics
     // B-A = FeedForward Control to the disturbance
     control_DOB -= control_filtered_yaw;
+
+    _dob_monitor.yaw_filtered = state_filtered_yaw;
+    _dob_monitor.yaw_control = control_DOB;
     // this should be subtracted to original roll_control
     if (use_DOB)
     {
