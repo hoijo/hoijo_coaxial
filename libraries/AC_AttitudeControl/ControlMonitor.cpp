@@ -55,7 +55,7 @@ void AC_AttitudeControl::control_monitor_log(void)
 // Log Additional Disturbance Observer based controller data
 void AC_AttitudeControl::dobc_monitor_log(void)
 {
-    DataFlash_Class::instance()->Log_Write("DOBC", "TimeUS,Roll,Pitch,Yaw,RollCTRL,PitchCTRL,YawCTRL,FlagR,FlagP,FlagY", "QffffffBBB",
+    DataFlash_Class::instance()->Log_Write("DOBC", "TimeUS,Roll,Pitch,Yaw,RollCTRL,PitchCTRL,YawCTRL,Qtd", "Qfffffff",
                                            AP_HAL::micros64(),
                                            (double)_dob_monitor.roll_filtered,
                                            (double)_dob_monitor.pitch_filtered,
@@ -63,12 +63,21 @@ void AC_AttitudeControl::dobc_monitor_log(void)
                                            (double)_dob_monitor.roll_control,
                                            (double)_dob_monitor.pitch_control,
                                            (double)_dob_monitor.yaw_control,
-                                           _dob_monitor.flagR,
-                                           _dob_monitor.flagP,
-                                           _dob_monitor.flagY
-                                          //  (double)_dob_monitor.roll_control_filtered,
-                                          //  (double)_dob_monitor.pitch_control_filtered,
-                                          //  (double)_dob_monitor.yaw_control_filtered
+                                           (double)_dob_monitor.q2_dot
+                                          );
+}
+
+void AC_AttitudeControl::dobc_monitor2_log(void)
+{
+    DataFlash_Class::instance()->Log_Write("DOB2", "TimeUS,RCTRLin,RCTRLFilt,PCTRLin,PCTRFilt,YCTRLin,YCTRLFilt,QtY", "Qfffffff",
+                                           AP_HAL::micros64(),
+                                          (double)_dob_monitor.roll_control_in,
+                                          (double)_dob_monitor.roll_control_filtered,
+                                          (double)_dob_monitor.pitch_control_in,
+                                          (double)_dob_monitor.pitch_control_filtered,
+                                          (double)_dob_monitor.yaw_control_in,
+                                          (double)_dob_monitor.yaw_control_filtered,
+                                          (double)_dob_monitor.q2_yaw
                                           );
 }
 /*

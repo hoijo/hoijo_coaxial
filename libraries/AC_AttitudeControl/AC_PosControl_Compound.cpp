@@ -114,22 +114,22 @@ void AC_PosControl_Compound::accel_to_lean_angles(float dt, float ekfNavVelGainS
 
     //To-Do : Do not allow use thruster which requires level of precision like circle, land modes, ...
     // To-Do 2 : Possibly There would be optimal ways to mix pitch down and rear throttle controller.
-    if (_use_thruster)
-    {
-      if (accel_forward >= 0.0f)
-        {
-          // only allow small amount of nose down
-           _pitch_target = constrain_float(_pitch_target,-500,0);
-          //  _pitch_target = 0.0f;
-
-            run_auxiliary_thruster_controller(accel_forward);
-        }
-      else
-      {
-            run_auxiliary_thruster_controller(0.0f);
-            _motors.set_forward(0.0f);
-      }
-    }
+    // if (_use_thruster)
+    // {
+    //   if (accel_forward >= 0.0f)
+    //     {
+    //       // only allow small amount of nose down
+    //       //  _pitch_target = constrain_float(_pitch_target,-500,0);
+    //       //  _pitch_target = 0.0f;
+    //
+    //         // run_auxiliary_thruster_controller(accel_forward);
+    //     }
+    //   else
+    //   {
+    //         run_auxiliary_thruster_controller(0.0f);
+    //         _motors.set_forward(0.0f);
+    //   }
+    // }
 
 }
 

@@ -416,6 +416,7 @@ void Copter::ten_hz_logging_loop()
     Log_Write_Heli();
 #endif
     attitude_control->dobc_monitor_log();
+    attitude_control->dobc_monitor2_log();
 }
 
 // twentyfive_hz_logging - should be run at 25hz

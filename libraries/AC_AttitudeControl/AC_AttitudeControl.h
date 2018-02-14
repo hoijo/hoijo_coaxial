@@ -430,6 +430,11 @@ protected:
       uint8_t flagR;
       uint8_t flagP;
       uint8_t flagY;
+      float roll_control_in;
+      float pitch_control_in;
+      float yaw_control_in;
+      float q2_yaw;
+      float q2_dot;
     } _dob_monitor;
 
     // update state in ControlMonitor
@@ -440,6 +445,7 @@ public:
     // log a CTRL message
     void control_monitor_log(void);
     void dobc_monitor_log(void);
+    void dobc_monitor2_log(void);
     // return current RMS controller filter for each axis
     float control_monitor_rms_output_roll(void) const;
     float control_monitor_rms_output_roll_P(void) const;
