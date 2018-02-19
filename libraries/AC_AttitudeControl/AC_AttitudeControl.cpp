@@ -771,38 +771,6 @@ void AC_AttitudeControl::set_use_DOB(bool use_DOB)
     _use_DOB = use_DOB;
 }
 
-// float AC_AttitudeControl::DOB_on_change(float state_filtered, uint16_t flag_RPY)
-// {
-//   if (_use_DOB)
-//   {
-//     if (flag_last != _use_DOB)
-//     {
-//       flag_last = _use_DOB;
-//
-//       if (flag_RPY == 1)
-//       {
-//         return _ahrs.roll;
-//       }
-//
-//       if (flag_RPY == 2)
-//       {
-//         return _ahrs.pitch;
-//       }
-//
-//       if (flag_RPY == 3)
-//       {
-//         return _ahrs.yaw;
-//       }
-//     }
-//     else
-//     return state_filtered;
-//   }
-//   else
-//   {
-//     flag_last = false;
-//     return state_filtered;
-//   }
-// }
 // Addition of Disturbance Observer Based Controller for Attitude Control Loops
 float AC_AttitudeControl::disturbance_observer_on_roll(float control_output, bool use_DOB)
 {
@@ -818,7 +786,6 @@ float AC_AttitudeControl::disturbance_observer_on_roll(float control_output, boo
     float tau = 0.25f;
 
     float temp = a0/(tau * tau);
-    // float state = radians(_ahrs.roll*0.01f); // current state
     float state = wrap_PI(_ahrs.roll);
     // A : Control Input Filtering (Q-Filter A)
 
@@ -828,7 +795,6 @@ float AC_AttitudeControl::disturbance_observer_on_roll(float control_output, boo
 
     // Time-Domain Serialized Implementation
     // B : Q_Filter B to State Filtering
-    // float roll = _ahrs.roll;
     float q2_dot = -temp * state_filtered_roll - a1/tau * q2_roll + temp * state;
     q2_roll += q2_dot * _dt;
 
@@ -881,7 +847,6 @@ float AC_AttitudeControl::disturbance_observer_on_pitch(float control_output, bo
     float tau = 0.25f;
 
     float temp = a0/(tau * tau);
-    // float state = radians(_ahrs.pitch*0.01f); // current pitch state
     float state = wrap_PI(_ahrs.pitch);
     // A : Control Input Filtering (Q-Filter A)
     float p2_dot = -temp * control_filtered_pitch - a1/tau * p2_pitch + temp * control_output;
@@ -896,7 +861,6 @@ float AC_AttitudeControl::disturbance_observer_on_pitch(float control_output, bo
     q2_pitch += q2_dot * _dt;
 
     state_filtered_pitch += q2_pitch * _dt;
-    // state_filtered_pitch = DOB_on_change(state_filtered_pitch, 2);
     state_filtered_pitch = wrap_PI(state_filtered_pitch);
 
     // float control_DOB = 1/b0 * (q2_dot - a0 * state_filtered_pitch - a1 * q2_pitch);
@@ -944,9 +908,7 @@ float AC_AttitudeControl::disturbance_observer_on_yaw(float control_output, bool
     // Q-Filter Coefficient
     float tau = 0.25f;
     float temp = a0/(tau * tau);
-    // float state = radians(_ahrs.yaw*0.01f); // current heading
     float state = wrap_PI(_ahrs.yaw);
-    // float state = _ahrs.yaw;
     // A : Control Input Filtering (Q-Filter A)
     float p2_dot = -temp * control_filtered_yaw - a1/tau * p2_yaw + temp * control_output;
 
