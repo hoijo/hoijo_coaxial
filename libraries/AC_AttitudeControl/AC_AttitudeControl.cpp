@@ -811,9 +811,6 @@ float AC_AttitudeControl::disturbance_observer_on_roll(float control_output, boo
     // Nominal System is basic 2nd order system
     float a0 = 1.0f;
     float a1 = 2.0f;
-    // float b0 = 0.01811;
-    // float b0 = 0.01811 / 0.00017453292;
-    // float b0 = 0.01811 / 0.00001;
     float MOI = 0.01811f;
     float b0 = 2.0f;
 
@@ -878,7 +875,6 @@ float AC_AttitudeControl::disturbance_observer_on_pitch(float control_output, bo
     float a1 = 2.0f;
     float MOI = 0.03872f;
     float b0 = 1.0f;
-    // float b0 = 0.03872 / 0.00017453292;
 
 
     // Q-Filter Coefficient
@@ -942,12 +938,9 @@ float AC_AttitudeControl::disturbance_observer_on_yaw(float control_output, bool
     // Nominal System is basic 2nd order system
     float a0 = 1.0f;
     float a1 = 2.0f;
-    // float b0 = 0.02438 / 0.00017453292;
-    // float b0 = 0.02438 / 0.00001f;
-    // float b0 = 0.02438f;
     float b0 = 1.0f;
     float MOI = 0.02438f;
-    // float b0 = M_PI;
+    
     // Q-Filter Coefficient
     float tau = 0.25f;
     float temp = a0/(tau * tau);
