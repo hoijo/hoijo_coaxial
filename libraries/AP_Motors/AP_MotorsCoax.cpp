@@ -227,11 +227,19 @@ void AP_MotorsCoax::output_armed_stabilizing()
     // _actuator_out[2] = -_actuator_out[0];
     // _actuator_out[3] = -_actuator_out[1];
 
-    _actuator_out[1] = pitch_thrust;  //servo 2  elevator
+    // _actuator_out[1] = pitch_thrust;  //servo 2  elevator
+    //
+    // _actuator_out[0] = ((-roll_thrust*0.866f)-(pitch_thrust*0.4f));   //servo 1 aillron
+    //
+    // _actuator_out[2] = ((roll_thrust*0.866f)-(pitch_thrust*0.4f));   //servo 3 aillron
+    //
+    // _actuator_out[3] = -_actuator_out[1];
 
-    _actuator_out[0] = ((-roll_thrust*0.866f)-(pitch_thrust*0.4f));   //servo 1 aillron
+    _actuator_out[1] = pitch_thrust*get_sign_paremter1();  //servo 2  elevator
 
-    _actuator_out[2] = ((roll_thrust*0.866f)-(pitch_thrust*0.4f));   //servo 3 aillron
+    _actuator_out[0] = ((roll_thrust*get_sign_paremter2())+(pitch_thrust*get_sign_paremter3()));   //servo 1 aillron
+
+    _actuator_out[2] = ((roll_thrust*get_sign_paremter4())+(pitch_thrust*get_sign_paremter5()));   //servo 3 aillron
 
     _actuator_out[3] = -_actuator_out[1];
 
