@@ -26,6 +26,13 @@
 #define AP_MOTORS_BAT_CURR_TC_DEFAULT   5.0f    // Time constant used to limit the maximum current
 #define AP_MOTORS_BATT_VOLT_FILT_HZ     0.5f    // battery voltage filtered at 0.5hz
 
+
+#define SIGN_PARAMETER1_DEFAULT  1.0f
+#define SIGN_PARAMETER2_DEFAULT  -0.866f
+#define SIGN_PARAMETER3_DEFAULT  -0.4f
+#define SIGN_PARAMETER4_DEFAULT  0.866f
+#define SIGN_PARAMETER5_DEFAULT  -0.4f
+
 // spool definition
 #define AP_MOTORS_SPOOL_UP_TIME_DEFAULT 0.5f    // time (in seconds) for throttle to increase from zero to min throttle, and min throttle to full throttle.
 
@@ -92,13 +99,19 @@ public:
     // get minimum or maximum pwm value that can be output to motors
     int16_t             get_pwm_output_min() const;
     int16_t             get_pwm_output_max() const;
-    
+
     // set thrust compensation callback
     FUNCTOR_TYPEDEF(thrust_compensation_fn_t, void, float *, uint8_t);
     void                set_thrust_compensation_callback(thrust_compensation_fn_t callback) {
         _thrust_compensation_callback = callback;
     }
-    
+
+    float get_sign_paremter1() {return _sign_paremter1;}
+   float get_sign_paremter2() {return _sign_paremter2;}
+   float get_sign_paremter3() {return _sign_paremter3;}
+   float get_sign_paremter4() {return _sign_paremter4;}
+   float get_sign_paremter5() {return _sign_paremter5;}
+
     // var_info for holding Parameter information
     static const struct AP_Param::GroupInfo        var_info[];
 
@@ -139,7 +152,7 @@ protected:
 
     // output booster throttle, if any
     virtual void        output_boost_throttle(void);
-    
+
     // save parameters as part of disarming
     void save_params_on_disarm();
 
@@ -166,6 +179,12 @@ protected:
     AP_Int8             _throttle_hover_learn;  // enable/disabled hover thrust learning
     AP_Int8             _disarm_disable_pwm;    // disable PWM output while disarmed
 
+    AP_Float            _sign_paremter1;
+    AP_Float            _sign_paremter2;
+    AP_Float            _sign_paremter3;
+    AP_Float            _sign_paremter4;
+    AP_Float            _sign_paremter5;
+
     // Maximum lean angle of yaw servo in degrees. This is specific to tricopter
     AP_Float            _yaw_servo_angle_max_deg;
 
@@ -174,7 +193,7 @@ protected:
 
     // scaling for booster motor throttle
     AP_Float            _boost_scale;
-    
+
     // motor output variables
     bool                motor_enabled[AP_MOTORS_MAX_NUM_MOTORS];    // true if motor is enabled
     int16_t             _throttle_radio_min;        // minimum PWM from RC input's throttle channel (i.e. minimum PWM input from receiver, RC3_MIN)

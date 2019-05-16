@@ -158,7 +158,7 @@ const AP_Param::GroupInfo AP_MotorsMulticopter::var_info[] = {
 
     // @Param: SPOOL_TIME
     // @DisplayName: Spool up time
-    // @Description: Time in seconds to spool up the motors from zero to min throttle. 
+    // @Description: Time in seconds to spool up the motors from zero to min throttle.
     // @Range: 0 2
     // @Units: s
     // @Increment: 0.1
@@ -172,7 +172,42 @@ const AP_Param::GroupInfo AP_MotorsMulticopter::var_info[] = {
     // @Increment: 0.1
     // @User: Advanced
     AP_GROUPINFO("BOOST_SCALE",  37, AP_MotorsMulticopter,  _boost_scale, 0),
-    
+
+    // @Param: Hoijo
+// @DisplayName: Hoijo
+// @Description: Coax mixing Output Parameter For servo 2
+// @Values: Hoijo
+// @User: Advanced
+AP_GROUPINFO("SIGN_1",  38, AP_MotorsMulticopter,  _sign_paremter1, SIGN_PARAMETER1_DEFAULT),
+
+// @Param:
+// @DisplayName: Hoijo
+// @Description: Coax mixing Output Parameter For servo 1
+// @Values:
+// @User: Advanced
+AP_GROUPINFO("SIGN_2",  39, AP_MotorsMulticopter,  _sign_paremter2, SIGN_PARAMETER2_DEFAULT),
+
+// @Param:
+// @DisplayName: Hoijo
+// @Description: Coax mixing Output Parameter For servo 1
+// @Values:
+// @User: Advanced
+AP_GROUPINFO("SIGN_3",  40, AP_MotorsMulticopter,  _sign_paremter3, SIGN_PARAMETER3_DEFAULT),
+
+// @Param:
+// @DisplayName: Hoijo
+// @Description: Coax mixing Output Parameter For servo 3
+// @Values:
+// @User: Advanced
+AP_GROUPINFO("SIGN_4",  41, AP_MotorsMulticopter,  _sign_paremter4, SIGN_PARAMETER4_DEFAULT),
+
+// @Param:
+// @DisplayName: Hoijo
+// @Description: Coax mixing Output Parameter For servo 3
+// @Values:
+// @User: Advanced
+AP_GROUPINFO("SIGN_5",  42, AP_MotorsMulticopter,  _sign_paremter5, SIGN_PARAMETER5_DEFAULT),
+
     AP_GROUPEND
 };
 
@@ -224,7 +259,7 @@ void AP_MotorsMulticopter::output()
 
     // apply any thrust compensation for the frame
     thrust_compensation();
-    
+
     // convert rpy_thrust values to pwm
     output_to_motors();
 
@@ -237,10 +272,10 @@ void AP_MotorsMulticopter::output_boost_throttle(void)
 {
     if (_boost_scale > 0) {
         float throttle = constrain_float(get_throttle() * _boost_scale, 0, 1);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_boost_throttle, throttle*1000);        
+        SRV_Channels::set_output_scaled(SRV_Channel::k_boost_throttle, throttle*1000);
     }
 }
-    
+
 
 // sends minimum values out to the motors
 void AP_MotorsMulticopter::output_min()

@@ -90,9 +90,13 @@ void AP_MotorsCoax::output_to_motors()
     switch (_spool_mode) {
         case SHUT_DOWN:
             // sends minimum values out to the motors
-            rc_write(AP_MOTORS_MOT_1, calc_pwm_output_1to1(_roll_radio_passthrough, _servo1));
-            rc_write(AP_MOTORS_MOT_2, calc_pwm_output_1to1(_pitch_radio_passthrough, _servo2));
-            rc_write(AP_MOTORS_MOT_3, calc_pwm_output_1to1(-_roll_radio_passthrough, _servo3));
+            // rc_write(AP_MOTORS_MOT_1, calc_pwm_output_1to1(_roll_radio_passthrough, _servo1));
+            // rc_write(AP_MOTORS_MOT_2, calc_pwm_output_1to1(_pitch_radio_passthrough, _servo2));
+            // rc_write(AP_MOTORS_MOT_3, calc_pwm_output_1to1(-_roll_radio_passthrough, _servo3));
+            rc_write(AP_MOTORS_MOT_1, calc_pwm_output_1to1(((-_roll_radio_passthrough*0.866f)+(_pitch_radio_passthrough*0.4f)), _servo1));
+            rc_write(AP_MOTORS_MOT_2, calc_pwm_output_1to1(-_pitch_radio_passthrough, _servo2));
+            rc_write(AP_MOTORS_MOT_3, calc_pwm_output_1to1(((_roll_radio_passthrough*0.866f)+(_pitch_radio_passthrough*0.4f)), _servo3));
+
             rc_write(AP_MOTORS_MOT_4, calc_pwm_output_1to1(-_pitch_radio_passthrough, _servo4));
             rc_write(AP_MOTORS_MOT_5, get_pwm_output_min());
             rc_write(AP_MOTORS_MOT_6, get_pwm_output_min());
@@ -212,8 +216,23 @@ void AP_MotorsCoax::output_armed_stabilizing()
  // static thrust is proportional to the airflow velocity squared
  // therefore the torque of the roll and pitch actuators should be approximately proportional to
  // the angle of attack multiplied by the static thrust.
- _actuator_out[0] = roll_thrust;//thrust_out_actuator;
- _actuator_out[1] = pitch_thrust;//thrust_out_actuator;
+ // _actuator_out[0] = roll_thrust;//thrust_out_actuator;
+ // _actuator_out[1] = pitch_thrust;//thrust_out_actuator;
+ //
+ // if (fabsf(_actuator_out[0]) > 1.0f) {
+ //     limit.roll_pitch = true;
+ //     _actuator_out[0] = constrain_float(_actuator_out[0], -1.0f, 1.0f);
+ // }
+ // if (fabsf(_actuator_out[1]) > 1.0f) {
+ //     limit.roll_pitch = true;
+ //     _actuator_out[1] = constrain_float(_actuator_out[1], -1.0f, 1.0f);
+ // }
+ // _actuator_out[2] = -_actuator_out[0];
+ // _actuator_out[3] = -_actuator_out[1];
+ _actuator_out[1] = pitch_thrust*get_sign_paremter1();  //servo 2  elevator
+ _actuator_out[0] = ((roll_thrust*get_sign_paremter2())+(pitch_thrust*get_sign_paremter3()));   //servo 1 aillron
+ _actuator_out[2] = ((roll_thrust*get_sign_paremter4())+(pitch_thrust*get_sign_paremter5()));   //servo 3 aillron
+ _actuator_out[3] = -_actuator_out[1];
 
  if (fabsf(_actuator_out[0]) > 1.0f) {
      limit.roll_pitch = true;
@@ -223,8 +242,15 @@ void AP_MotorsCoax::output_armed_stabilizing()
      limit.roll_pitch = true;
      _actuator_out[1] = constrain_float(_actuator_out[1], -1.0f, 1.0f);
  }
- _actuator_out[2] = -_actuator_out[0];
- _actuator_out[3] = -_actuator_out[1];
+ if (fabsf(_actuator_out[2]) > 1.0f) {
+     limit.roll_pitch = true;
+     _actuator_out[2] = constrain_float(_actuator_out[1], -1.0f, 1.0f);
+ }
+ if (fabsf(_actuator_out[3]) > 1.0f) {
+       limit.roll_pitch = true;
+     _actuator_out[3] = constrain_float(_actuator_out[1], -1.0f, 1.0f);
+ }
+
 }
 
 // output_test - spin a motor at the pwm value specified
